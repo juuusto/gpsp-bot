@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/napuu/gpsp-bot/pkg/utils"
@@ -133,6 +134,16 @@ func checkAndCompress(input string, maxSizeMB float64) string {
 	return input
 }
 
+func isVP9(file string) bool {
+	cmd := exec.Command("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name", "-of", "default=nokey=1", file)
+	output, err := cmd.Output()
+	if err != nil {
+		slog.Error(fmt.Sprintf("Error checking file %s: %v\n", file, err))
+		return false
+	}
+	return strings.Contains(string(output), "vp9")
+}
+
 func (u *VideoPostprocessingHandler) Execute(m *Context) {
 	slog.Debug("Entering VideoPostprocessingHandler")
 	shouldTryPostprocessing := <-m.cutVideoArgsParsed
@@ -150,7 +161,7 @@ func (u *VideoPostprocessingHandler) Execute(m *Context) {
 			}
 		}
 
-		if utils.FileExists(m.finalVideoPath) {
+		if utils.FileExists(m.finalVideoPath) && isVP9(m.finalVideoPath) {
 			// Reencode to H.264 to get rid of VP9
 			h264Path := fmt.Sprintf("%s.h264.mp4", m.finalVideoPath)
 			err := reencodeToH264(m.finalVideoPath, h264Path)
