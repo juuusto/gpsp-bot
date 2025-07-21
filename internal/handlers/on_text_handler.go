@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -23,7 +24,7 @@ func (mp *OnTextHandler) Execute(m *Context) {
 			m.chatId = strconv.Itoa(int(c.Chat().ID))
 
 			if c.Message().IsReply() {
-				m.replyToId = string(rune(c.Message().ReplyTo.ID))
+				m.replyToId = fmt.Sprint(c.Message().ReplyTo.ID)
 				m.shouldReplyToMessage = true
 			}
 		}
