@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"sort"
 	"strings"
@@ -26,6 +27,7 @@ type EuriborRateEntry struct {
 }
 
 func GenerateLine(data []EuriborRateEntry, outputPath string) error {
+	slog.Debug("Generating line")
 	line := charts.NewLine()
 
 	// Get unique dates and build data series
@@ -93,6 +95,12 @@ func GenerateLine(data []EuriborRateEntry, outputPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to render the line chart: %v", err)
 	}
+
+	// Verify the output file was actually created
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		return fmt.Errorf("chart rendering completed without error, but output file was not created at %s", outputPath)
+	}
+
 	return nil
 }
 

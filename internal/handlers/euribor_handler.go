@@ -26,9 +26,13 @@ func (t *EuriborHandler) Execute(m *Context) {
 		}
 		data := utils.GetRatesFromCSV(tmpPath, time.Now().AddDate(0, -1, 0))
 
-		utils.GenerateLine(data, path)
+		err := utils.GenerateLine(data, path)
+		if err != nil {
+			slog.Error("Failed to generate euribor chart", "error", err, "path", path)
+		} else {
+			m.finalImagePath = path
+		}
 
-		m.finalImagePath = path
 		m.rates = data[0]
 	}
 
