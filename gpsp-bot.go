@@ -10,6 +10,7 @@ import (
 	"github.com/napuu/gpsp-bot/internal/platforms"
 )
 
+		"github.com/napuu/gpsp-bot/internal/db"
 func main() {
 	platforms.EnsureBotCanStart()
 	platforms.VerifyEnabledCommands()
@@ -19,6 +20,14 @@ func main() {
 
 	sc := make(chan os.Signal, 1)
 	switch os.Args[1] {
+			// Initialize DB for sent videos
+			dbPath := os.Getenv("DATABASE_FILE")
+			if dbPath == "" {
+				dbPath = "sent_videos.db"
+			}
+			dbHandle := db.InitDB(dbPath)
+			defer dbHandle.Close()
+			db.SetGlobalDB(dbHandle)
 	case "telegram":
 		slog.Info("Starting Telegram bot...")
 		platforms.RunTelegramBot()
