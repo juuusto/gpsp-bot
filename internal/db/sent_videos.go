@@ -33,6 +33,13 @@ func InitDB(path string) *sql.DB {
 	if err != nil {
 		log.Fatalf("failed to create table: %v", err)
 	}
+
+	// Initialize reactions table
+	err = InitReactionsTable(db)
+	if err != nil {
+		log.Fatalf("failed to create reactions table: %v", err)
+	}
+
 	return db
 }
 

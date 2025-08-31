@@ -29,6 +29,7 @@ const (
 	DownloadVideo Action = "dl"
 	Ping          Action = "ping"
 	Euribor       Action = "euribor"
+	Reactions     Action = "reactions"
 )
 
 var ActionMap = map[Action]ActionDescription{
@@ -36,6 +37,7 @@ var ActionMap = map[Action]ActionDescription{
 	DownloadVideo: "Lataa video",
 	Euribor:       "Tuoreet Euribor-korot",
 	Ping:          "Ping",
+	Reactions:     "Näytä emoji-reaktioiden tilastot",
 }
 
 type Context struct {
@@ -83,4 +85,10 @@ type Context struct {
 	cutVideoArgsParsed            chan bool
 	shouldDeleteOriginalMessage   bool
 	shouldNagAboutOriginalMessage bool
+
+	// Reaction tracking fields
+	reaction          bool   // true if this context represents a reaction event
+	reactionMessageID string // ID of the message that was reacted to
+	reactionUser      string // user who reacted
+	reactionEmoji     string // emoji used in the reaction
 }

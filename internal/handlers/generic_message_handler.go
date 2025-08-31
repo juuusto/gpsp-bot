@@ -48,6 +48,8 @@ func (mp *GenericMessageHandler) Execute(m *Context) {
 			m.action = Ping
 		case Euribor:
 			m.action = Euribor
+		case Reactions:
+			m.action = Reactions
 		}
 
 		m.parsedText = strings.TrimSpace(strings.Replace(textWithoutPrefixOrSuffix, extractedAction, "", 1))

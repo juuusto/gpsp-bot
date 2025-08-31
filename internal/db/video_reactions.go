@@ -20,8 +20,7 @@ func InitReactionsTable(db *sql.DB) error {
 		user TEXT,
 		emoji TEXT,
 		created_at INTEGER
-	);
-	`)
+	);`)
 	return err
 }
 
@@ -31,4 +30,80 @@ func InsertVideoReaction(db *sql.DB, r VideoReaction) error {
 	VALUES (?, ?, ?, ?)
 	`, r.MessageUUID, r.User, r.Emoji, r.CreatedAt)
 	return err
+}
+
+// GetReactionsForMessage returns all reactions for a specific message
+func GetReactionsForMessage(db *sql.DB, messageUUID string) ([]VideoReaction, error) {
+	rows, err := db.Query(`
+	SELECT id, message_uuid, user, emoji, created_at
+	FROM video_reactions
+	WHERE message_uuid = ?
+	ORDER BY created_at DESC
+	`, messageUUID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var reactions []VideoReaction
+	for rows.Next() {
+		var r VideoReaction
+		err := rows.Scan(&r.ID, &r.MessageUUID, &r.User, &r.Emoji, &r.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		reactions = append(reactions, r)
+	}
+	return reactions, nil
+}
+
+// GetReactionStats returns statistics about reactions
+func GetReactionStats(db *sql.DB) (map[string]int, error) {
+	rows, err := db.Query(`
+	SELECT emoji, COUNT(*) as count
+	FROM video_reactions
+	GROUP BY emoji
+	ORDER BY count DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	stats := make(map[string]int)
+	for rows.Next() {
+		var emoji string
+		var count int
+		err := rows.Scan(&emoji, &count)
+		if err != nil {
+			return nil, err
+		}
+		stats[emoji] = count
+	}
+	return stats, nil
+}
+
+// GetUserReactions returns all reactions by a specific user
+func GetUserReactions(db *sql.DB, username string) ([]VideoReaction, error) {
+	rows, err := db.Query(`
+	SELECT id, message_uuid, user, emoji, created_at
+	FROM video_reactions
+	WHERE user = ?
+	ORDER BY created_at DESC
+	`, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var reactions []VideoReaction
+	for rows.Next() {
+		var r VideoReaction
+		err := rows.Scan(&r.ID, &r.MessageUUID, &r.User, &r.Emoji, &r.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		reactions = append(reactions, r)
+	}
+	return reactions, nil
 }

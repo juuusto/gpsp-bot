@@ -14,6 +14,12 @@ Use `PROXY_URLS` environment variable to provide list of available SOCKS5-proxie
 
 This command requires [yt-dlp](https://github.com/yt-dlp/yt-dlp) to be available at `PATH`. For downloads to keep working, you should run `yt-dlp -U` so it is running the latest available release.
 
+**Note**: Emoji reactions to downloaded videos are automatically tracked in the database.
+
+### /reactions
+
+Shows statistics of emoji reactions to downloaded videos. Displays a sorted list of emojis with their usage counts.
+
 ### /euribor
 
 Values are fetched from Suomen Pankki dashboards with Playwright and cached at SQLite db located at `DATABASE_FILE`. Playwright used because the "official" dashboards available through APIs are not updated as quickly as this one dashboard.
@@ -44,14 +50,14 @@ PROXY_URLS="localhost:1235;localhost:1234" \
   DATABASE_FILE=/opt/euribor.db \
   MISTRAL_TOKEN=<mistral token> \
   TELEGRAM_TOKEN=<telegram token> \
-  ENABLED_FEATURES="ping;dl;euribor;tuplilla" \
+  ENABLED_FEATURES="ping;dl;euribor;tuplilla;reactions" \
   go run gpsp-bot.go telegram
 ```
 
 ### Discord with not so much features enabled
 ```
-DISCORD_TOKEN=<telegram token> \
-  ENABLED_FEATURES=ping \
+DISCORD_TOKEN=<discord token> \
+  ENABLED_FEATURES="ping;dl;reactions" \
   go run gpsp-bot.go discord
 ```
 
@@ -60,6 +66,6 @@ Container includes yt-dlp at build-time, but see /dl -section why it is useful t
 ```
 podman built -t gpsp-bot .
 podman run -v /usr/bin/yt-dlp:/usr/bin/yt-dlp:z \
-  -e ENABLED_FEATURES="ping;dl" \
+  -e ENABLED_FEATURES="ping;dl;reactions" \
   -e TELEGRAM_TOKEN=<token> gpsp-bot telegram
 ```

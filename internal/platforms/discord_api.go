@@ -38,6 +38,9 @@ func RunDiscordBot() {
 
 	// Add a handler for messages
 	dg.AddHandler(wrapDiscoHandler(chain))
+	
+	// Add a handler for reactions
+	dg.AddHandler(wrapDiscordReactionHandler(chain))
 
 	// Specify intents
 	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsDirectMessages
@@ -47,5 +50,21 @@ func RunDiscordBot() {
 	if err != nil {
 		slog.Error("Error opening Discord connection", "error", err)
 		return
+	}
+}
+
+func wrapDiscordReactionHandler(chain *chain.HandlerChain) func(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
+	return func(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
+		// Create context for reaction events
+		ctx := &handlers.Context{
+			DiscordSession: s,
+			Service:        handlers.Discord,
+			reaction:       true,
+			reactionMessageID: r.MessageID,
+			reactionUser:      r.User.Username,
+			reactionEmoji:     r.Emoji.Name,
+		}
+		
+		chain.Process(ctx)
 	}
 }

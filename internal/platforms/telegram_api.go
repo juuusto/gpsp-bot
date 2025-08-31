@@ -42,8 +42,38 @@ func RunTelegramBot() {
 	}
 
 	bot.Handle(tele.OnText, wrapTeleHandler(bot, chain))
+	
+	// Handle reactions to track emoji responses to videos
+	bot.Handle(tele.OnReaction, wrapReactionHandler(bot, chain))
 
 	go bot.Start()
+}
+
+func wrapReactionHandler(bot *tele.Bot, chain *chain.HandlerChain) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		// Create context for reaction events
+		ctx := &handlers.Context{
+			TelebotContext: c,
+			Telebot:        bot,
+			Service:        handlers.Telegram,
+			reaction:       true,
+		}
+		
+		// Extract reaction information
+		if c.Message() != nil && c.Message().Reactions != nil {
+			// Get the latest reaction
+			reactions := c.Message().Reactions
+			if len(reactions) > 0 {
+				latestReaction := reactions[len(reactions)-1]
+				ctx.reactionMessageID = c.Message().Text // Use message text as identifier
+				ctx.reactionUser = latestReaction.User.Username
+				ctx.reactionEmoji = latestReaction.Emoji
+			}
+		}
+		
+		chain.Process(ctx)
+		return nil
+	}
 }
 
 func getTelegramBot() *tele.Bot {
@@ -54,8 +84,7 @@ func getTelegramBot() *tele.Bot {
 			Timeout: 10 * time.Second,
 			AllowedUpdates: []string{
 				"message",
-				// TODO - take this into use
-				// "message_reaction",
+				"message_reaction",
 			},
 		},
 	}
