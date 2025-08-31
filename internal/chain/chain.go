@@ -32,7 +32,9 @@ func NewChainOfResponsibility() *HandlerChain {
 	deleteMessageHandler := &handlers.DeleteMessageHandler{}
 	textResponseHandler := &handlers.TextResponseHandler{}
 	tuplillaResponseHandler := &handlers.TuplillaResponseHandler{}
-
+	
+	reactionHandler := &handlers.ReactionHandler{}
+	reactionsHandler := &handlers.ReactionsHandler{}
 	endOfChainHandler := &handlers.EndOfChainHandler{}
 
 	onTextHandler.SetNext(genericMessageHandler)
@@ -56,7 +58,9 @@ func NewChainOfResponsibility() *HandlerChain {
 	constructTextResponseHandler.SetNext(deleteMessageHandler)
 
 	deleteMessageHandler.SetNext(textResponseHandler)
-	textResponseHandler.SetNext(endOfChainHandler)
+	textResponseHandler.SetNext(reactionsHandler)
+	reactionsHandler.SetNext(reactionHandler)
+	reactionHandler.SetNext(endOfChainHandler)
 
 	return &HandlerChain{
 		rootParser: onTextHandler,
